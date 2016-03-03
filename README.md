@@ -1,5 +1,5 @@
-hdrprocess Documentation
-*******************************************************************************
+HDRProcess Documentation
+===============================================================================
 Fully automate the process of stitching HDR images using Python
 
 Usage
