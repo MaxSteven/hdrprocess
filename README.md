@@ -17,7 +17,7 @@ that was done, you may want to change certain settings in the GUI
 
 Documentation
 ===============================================================================
-The full, most up-to-date documentation is available at colinvfx.com
+The full, most up-to-date documentation is available at [colinvfx.com](http://colinvfx.com)
 
 How to Contribute
 ===============================================================================
