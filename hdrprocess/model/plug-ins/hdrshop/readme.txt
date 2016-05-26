@@ -1,1 +1,0 @@
-Copy HDRSHOP plugins into this directory.

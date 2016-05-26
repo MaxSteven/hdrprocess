@@ -1,9 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""
+"""Description
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 The main module that runs the GUI or the command-line, depending on what values
 were pass
+
+Classes
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CmdTool: Converts args to strings. Also handles option priority.
+Window: The main GUI of the tool
+
+Methods
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+run_mkhdr: Runs the multi-threaded process of the HDRi merge.
+show_gui: Shows the GUI (shows if user passes no args to the .py file)
+cmd_main: Runs the command-line version of the .py
+main: Main execution which runs either cmd_main or show_gui
+
+Filename
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+hdrprocess.py
+
 """
 
 # IMPORT STANDARD LIBRARIES
@@ -24,24 +42,22 @@ try:
 except ImportError:
     import PySide.QtCore as QtCore
     import PySide.QtGui as QtGui
-except:
-    raise
 
 # IMPORT LOCAL LIBRARIES
-import commons.view.guiwidgets as guiwidgets
-import fileio.controller.paths as paths
-import controller.engine as engine
-import controller.routine as routine
-import view.mainWindow as mainWindow
+import paths
+import engine
+import routine
+import guiwidgets
+import mainWindow
 
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class CmdTool:
-    """
-    Helps initialize the basic configuration of the command-line version
-    """
+
+    """Helps initialize the basic configuration of the command-line version."""
+
     def __init__(self, *args):
         # optionalArgs = dict((k, v) for k, v in optionalArgs.iteritems() if v)
         self.args = args  # keep a list of the original args
@@ -50,9 +66,7 @@ class CmdTool:
     # end __init__
 
     def init_args(self):
-        """
-        Convenience method to help sort required arguments from optional ones
-        """
+        """Convenience method to help sort required args from optional ones."""
         optionalArgs = dict((k, v) for k, v in self.args.iteritems()
                             if v is not None and v is not False)
 
@@ -69,9 +83,7 @@ class CmdTool:
     # end init_args
 
     def __repr__(self):
-        """
-        Object statement of current class
-        """
+        """Object statement of current class."""
         return '<{cls}.{name}("args"={args!r}) object at '\
                '{hexI}'.format(cls=self.__class__,
                                name=self.__class__.__name__,
@@ -82,16 +94,16 @@ class CmdTool:
 
 
 class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
-    """
-    The main window that's drawn when the script is executed
-    """
+
+    """The main window that's drawn when the script is executed."""
+
     def __init__(self, parent=None):
-        """
-        Main constructor method for initializing an instance
+        """Main constructor method for initializing an instance.
 
         Args:
             parent (QApplication): The application (instance or otherwise) to
                                    hook into the GUI
+
         """
         super(Window, self).__init__(parent)
         # super(Window, self).__init__(parent)
@@ -122,7 +134,7 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
                             32, 45, 64, 90, 128, 180, 256]
         self.outputTypeOptions = [".exr", ".hdr", ".tiff", ".pfm"]
         self.outputTypeDefault = ".hdr"
-        self.curveInputDir = os.path.join(CURRENT_DIR, "model")
+        self.curveInputDir = os.path.join(CURRENT_DIR, "dependencies")
         self.maxThreadCount = multiprocessing.cpu_count()
         self.setupUi(self)
         self.init_ui()
@@ -130,9 +142,7 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end __init__
 
     def init_ui(self):
-        """
-        Initializes the UI window and overrides some default values
-        """
+        """Initializes the UI window and overrides some default values."""
         # get basic main config settings
         self.addFolderLine_pb.setMaximumSize(90, 28)
         self.threads_sb.setValue(self.maxThreadCount)
@@ -178,12 +188,12 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end init_ui
 
     def init_curve_inputs(self, fileSuffix=".crv"):
-        """
-        Creates the options for the curve input
+        """Creates the options for the curve input.
 
         Args:
             fileSuffix (str or tuple): The extension or tuple of extensions
                                        allowed for camera filetypes
+
         """
         self.curveInput_cb.clear()
         self.curveInput_cb.addItem("")
@@ -193,9 +203,7 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end init_curve_inputs
 
     def trigger(self):
-        """
-        Define the interactivity of the GUI
-        """
+        """Define the interactivity of the GUI."""
         addFolder = functools.partial(self.add_folder_line, self.defLEPhrases[0])
         self.addFolderLine_pb.clicked.connect(addFolder)
         self.automaticSeq_cb.stateChanged.connect(self.auto_sequence_interval)
@@ -214,15 +222,17 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end trigger
 
     def add_folder_line(self, defaultText=""):
-        """
-        Creates a new line at the bottom of the layout that contains a lineEdit,
-        a QToolButton, and a QPushButton in a horizontalLayout
+        """Creates a folder/file text field at the bottom of the layout.
+
+        The field contains a lineEdit, a QToolButton, and a QPushButton in a
+        horizontalLayout
 
         Args:
             defaultText (str): The text that is placed in the lineEdit
 
         Returns:
             NoneType: None
+
         """
         windowSize = self.geometry()
 
@@ -240,12 +250,12 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end add_folder_line
 
     def auto_sequence_interval(self):
-        """
-        Disables/Enables the sequence interval, based on whether or not the user
-        has automatic checked
+        """Disables/Enables the sequence interval, based on whether or not
+        the user has automatic checked
 
         .. important::
             This function is currently not implemented
+
         """
         raise NotImplementedError("Auto sequence interval doesn't work yet. Sorry!")
         isAutomaticChecked = self.automaticSeq_cb.isChecked()
@@ -253,10 +263,11 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end auto_sequenece_interval
 
     def curve_input_blank_status(self):
-        """
-        Checks if the current input curve is blank and, depending on whether or
-        not the input is blank, will also lock the "Default Curve" and
-        "Estimate Curve Only" from editting.
+        """Toggles curve fields as un/locked, depending on if input is blank.
+
+        If the curve input is not blank, it will also lock the "Default Curve"
+        and "Estimate Curve Only" from editing.
+
         """
         isBlank = self.curveInput_cb.currentText()
         if isBlank.strip() == "":
@@ -268,19 +279,18 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end curve_input_blank_status
 
     def toggle_fnum_automatic(self):
-        """
-        Enables/Disables the F-Num value, depending on whether or not the
-        automatic checkbox is enabled
-        """
-        isChecked = self.fnumAutomatic_cb.isChecked():
+        """Enables/Disables the F-Num value if the checkbox is enabled."""
+        isChecked = self.fnumAutomatic_cb.isChecked()
         self.manual_fnum_cb.setChecked(not isChecked)
         self.fnum_sw.setEnabled(not isChecked)
     # end toggle_fnum_automatic
 
     def estimate_curve_checked(self):
-        """
+        """Toggles the un/lock of curve-related attributes.
+
         If the estimate curve is checked, all other curve-related widgets are
         disabled and vice versa
+
         """
         isChecked = self.estimateCurve_cb.isChecked()
         self.defaultCurve_cb.setEnabled(not isChecked)
@@ -288,24 +298,22 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end estimate_curve_checked
 
     def default_curve_checked(self):
-        """
-        If the default curve is checked, all other curve-related widgets are
-        disabled and vice versa
-        """
+        """Toggles the un/lock of curve attributes, like estimate_curve_checked"""
         isChecked = self.defaultCurve_cb.isChecked()
         self.estimateCurve_cb.setEnabled(not isChecked)
         self.curveInput_cb.setEnabled(not isChecked)
     # end default_curve_checked
 
     def accept(self):
-        """
-        The method that runs when the "OK" button is pressed. Get the GUI's
-        current information and send it to the batch processor.
+        """Gets the GUI's info and sends it to batch processor.
+
+        The function runs when the "OK" button is pressed.
 
         The function keeps two dictionaries, one for displaying and other other
         for execution. The display version is used only if the contents of the
         script would be too long to view all at once in the GUI (aka, if it's
         greater than self.maxRowCount)
+
         """
         # the truncated version is for if the retrieved items would cause the
         # GUI to be really long. The idea is to only get the first/last pair
@@ -404,9 +412,9 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
             # run each formatted command
             processes = (Popen(cmd, shell=True) for cmd in commands)
             running_processes = list(islice(processes, self.dataDict['numOfThreads']))  # start new processes
-            # because the processes are counting down, an reversed index is kept
+            # because the processes are counting down, a reversed index is kept
             # so that it increments while the number of remaining processes
-            # decrements in the current execution
+            # while the current execution decrements
             #
             reverseIndex = len(commands)
             previousPercent = -1
@@ -432,7 +440,7 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
             self.outputLogger_te.append("Percent Complete: 100%.")
             self.outputLogger_pb.setValue(1)
             self.outputLogger_pb.hide()
-            print "Completed"
+            print("Completed")
         else:
             # close message box but do not close the main window
             # reset dict to default settings
@@ -441,13 +449,13 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end accept
 
     def get_gui_data(self):
-        """
-        Gets information about the current scene
+        """Gets information about the current scene.
 
         Returns:
             tuple: Returns two dictionaries. The first is the dictionary that's
                    used for executing files and the second is used for viewing
                    within the GUI
+
         """
         # Get information about the GUI before running external commands
         self.dataDict['numOfThreads'] = self.threads_sb.value()
@@ -521,27 +529,27 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end get_gui_data
 
     def reset_gui_data(self):
-        """
-        Sets the GUI's underlying data back to to its default state. This
-        function must be used whenever the user stops the script mid-execution
-        or when they execute self.accept but exit out of the confirmation
-        message box prematurely. If this isn't done, the information from the
-        previous execution is compounded with the next.
+        """Sets GUI back to its default state.
+
+        This function must be used whenever the user stops the script
+        mid-execution or when they execute self.accept but exit out of the
+        confirmation message box prematurely. If this isn't done, the
+        information from the previous execution is compounded with the next.
+
         """
         self.dataDict = {}
     # end reject_gui_data
 
     def reject(self):
-        """
-        The method that runs when the "OK" button is pressed
-        """
+        """The method that runs when the "OK" button is pressed."""
         sys.exit()
     # end reject
 
     def exchange_fnum_widget(self):
-        """
-        Changes out the widgets for f-number (the stops of an image) so that
-        the user can either write in a f-number by hand or pick from a menu.
+        """Toggles the GUI between a menu and a text box for the "f-num".
+
+        The user can either write in a f-number by hand or pick from a menu.
+
         """
         value = self.manual_fnum_cb.isChecked()
         if not value:
@@ -551,10 +559,11 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
     # end exchange_fnum_widget
 
     def browse_curve_file(self, preferredExt="crv"):
-        """
-        Gets curve file from a file browser. If the returned string from the
-        browser is a valid file, the curve input box is set to that new item
-        and "Default Curve" and "Estimate Curve Only" are disabled
+        """Gets curve file from a file browser.
+
+        If the returned string from the browser is a valid file, the curve
+        input box is set to that new item and "Default Curve" and
+        "Estimate Curve Only" are disabled.
 
         Args:
             preferredExt (str): The extension that the browser will look for
@@ -583,11 +592,11 @@ class Window(QtGui.QMainWindow, mainWindow.Ui_MainWindow):
 
 
 def run_mkhdr(cmdList, maxWorkers, winInstance):
-    """
-    Runs the multi-threaded process for the HDR merge
+    """Runs the multi-threaded process for the HDR merge.
 
     .. warning::
         Deprecated. Does NOT work
+
     """
     processes = (Popen(cmd, shell=True) for cmd in cmdList)
     running_processes = list(islice(processes, maxWorkers))  # start new processes
@@ -614,9 +623,12 @@ def run_mkhdr(cmdList, maxWorkers, winInstance):
 
 
 def show_gui():
-    """
-    Shows the GUI (currently set to show the GUI if the user passes in no
-    arguments or the GUI option within the command-line)
+    """Shows the GUI.
+
+    .. note::
+        (currently set to show the GUI if the user passes in no
+        arguments or the GUI option within the command-line)
+
     """
     app = QtGui.QApplication.activeWindow()
     if app is None:
@@ -631,8 +643,8 @@ def show_gui():
 
 
 def cmd_main():
-    """
-    Wraps a command-line utility around the hdr batch process.
+    """Wraps a command-line utility around the hdr batch process.
+
     It takes a list of files or folders, gets their hdr sequences, and outputs
     hdrs based on common, user-specified settings.
 
@@ -799,9 +811,7 @@ def cmd_main():
 
 
 def main():
-    """
-    Chooses between the GUI or the command-line mode
-    """
+    """Chooses between the GUI or the command-line mode."""
     if len(sys.argv) == 1:
         show_gui()
     else:
@@ -811,3 +821,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
